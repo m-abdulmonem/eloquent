@@ -1,0 +1,15 @@
+{
+    "name": "mabdulamonem/eloquent",
+    "autoload": {
+        "psr-4": {
+            "Mabdulamonem\\Eloquent\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mohamed Abdel Al-Monem",
+            "email": "abuabdojoker22@gmail.com"
+        }
+    ],
+    "require": {}
+}
