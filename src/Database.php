@@ -82,12 +82,13 @@ class Database
      */
     private $orderBy = [];
 
-    private  $host_name;
+    private $host_name;
 
-    private  $db_name;
+    private $db_name;
 
     private $username;
-    private  $password;
+
+    private $password;
 
     /**
      * Database constructor.
@@ -98,16 +99,17 @@ class Database
      * @param $username
      * @param $password
      */
-    public function __construct($host_name, $db_name, $username, $password)
+    public function __construct()
     {
+        require(__DIR__ . DIRECTORY_SEPARATOR ."db_config.php");
 
-        $this->host_name = $host_name;
-        $this->db_name= $db_name;
-        $this->username = $username;
-        $this->password = $password;
+        $this->host_name =  $config['host_name'];
+        $this->db_name = $config['db_name'];
+        $this->username = $config['username'];
+        $this->password = $config['password'];
 
-        if (! $this->isConnected()){
-           $this->connect();
+        if (!$this->isConnected()) {
+            $this->connect();
         }
     }
 
@@ -126,16 +128,17 @@ class Database
      */
     private function connect()
     {
-       $dsn = "mysql:host=".$this->host_name.";dbname=".$this->db_name;
-       $user = $this->username;
-       $pass = $this->password;
-       try{
-           static::$connection = new PDO($dsn,$user,$pass);
-           static::$connection->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
-           static::$connection->exec("SET NAMES utf8");
-       } catch (PDOException $e){
-           echo "Error : " . $e->getMessage();
-       }
+        $dsn = "mysql:host=" . $this->host_name . ";dbname=" . $this->db_name;
+        $user = $this->username;
+        $pass = $this->password;
+        try {
+            static::$connection = new PDO($dsn, $user, $pass);
+            static::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            static::$connection->exec("SET NAMES utf8");
+        }
+        catch (PDOException $e) {
+            echo "Error : " . $e->getMessage();
+        }
     }
 
     /**
@@ -156,7 +159,7 @@ class Database
     public function table(string $table): Database
     {
         $this->table = $table;
-        return$this;
+        return $this;
     }
 
     /**
@@ -176,14 +179,15 @@ class Database
      */
     public function data($key, $value = null): Database
     {
-        if (is_array($key)){
-            $this->data = array_merge($this->data,$key);
+        if (is_array($key)) {
+            $this->data = array_merge($this->data, $key);
             $this->addToBindings($key);
-        }else {
+        }
+        else {
             $this->data[$key] = $value;
             $this->addToBindings($value);
         }
-        return$this;
+        return $this;
     }
 
 
@@ -195,14 +199,14 @@ class Database
      */
     public function insert(string $table = null): Database
     {
-        if ($table){
+        if ($table) {
             $this->table($table);
         }
 
-        $sql = "INSERT INTO " .$this->table . " SET ";
+        $sql = "INSERT INTO " . $this->table . " SET ";
         $sql .= $this->setFields();
         $sql = rtrim($sql, ', ');
-        $this->query($sql,$this->bindings);
+        $this->query($sql, $this->bindings);
         $this->lastID = $this->connection()->lastInsertId();
         $this->rest();
         return $this;
@@ -216,18 +220,18 @@ class Database
      */
     public function update(string $table = null): Database
     {
-        if ($table){
+        if ($table) {
             $this->table($table);
         }
 
-        $sql = "UPDATE " .$this->table . " SET ";
+        $sql = "UPDATE " . $this->table . " SET ";
 
         $sql .= $this->setFields();
 
-        if ($this->wheres){
-            $sql .= " WHERE " . implode(' ',$this->wheres);
+        if ($this->wheres) {
+            $sql .= " WHERE " . implode(' ', $this->wheres);
         }
-        $query = $this->query($sql,$this->bindings);
+        $query = $this->query($sql, $this->bindings);
         $this->rows = $query->rowCount();
         $this->rest();
         return $this;
@@ -240,18 +244,18 @@ class Database
      */
     public function delete(string $table = null): Database
     {
-        if ($table){
+        if ($table) {
             $this->table($table);
         }
 
-        $sql = "DELETE FROM " .$this->table . "  ";
+        $sql = "DELETE FROM " . $this->table . "  ";
 
         $sql .= $this->setFields();
 
-        if ($this->wheres){
-            $sql .= " WHERE " . implode(' ',$this->wheres);
+        if ($this->wheres) {
+            $sql .= " WHERE " . implode(' ', $this->wheres);
         }
-        $query = $this->query($sql,$this->bindings);
+        $query = $this->query($sql, $this->bindings);
         $this->rows = $query->rowCount();
         $this->rest();
         return $this;
@@ -268,7 +272,7 @@ class Database
             $this->table($table);
         }
         $sql = $this->fetchStatement();
-        $result = $this->query($sql,$this->bindings)->fetch();
+        $result = $this->query($sql, $this->bindings)->fetch();
         $this->rest();
         return $result;
     }
@@ -283,7 +287,7 @@ class Database
             $this->table($table);
         }
         $sql = $this->fetchStatement();
-        $query = $this->query($sql,$this->bindings);
+        $query = $this->query($sql, $this->bindings);
         $results = $query->fetchAll();
         $this->rows = $query->rowCount();
         $this->rest();
@@ -324,9 +328,9 @@ class Database
         return $this;
     }
 
-    public function orderBy($orderBy,$sort = "ASC"): Database
+    public function orderBy($orderBy, $sort = "ASC"): Database
     {
-        $this->orderBy = [$orderBy,$sort];
+        $this->orderBy = [$orderBy, $sort];
         return $this;
     }
 
@@ -340,7 +344,7 @@ class Database
     public function limit(int $limit, int $offset): Database
     {
         $this->limit = $limit;
-        $this->offset =$offset;
+        $this->offset = $offset;
         return $this;
     }
     /**
@@ -349,7 +353,7 @@ class Database
     private function addToBindings($value)
     {
         if (is_array($value))
-            $this->bindings = array_merge($this->bindings,array_values($value));
+            $this->bindings = array_merge($this->bindings, array_values($value));
         else
             $this->bindings[] = $value;
     }
@@ -363,19 +367,20 @@ class Database
     {
         $bindings = func_get_args();
         $sql = array_shift($bindings);
-        if (count($bindings) && is_array($bindings[0])){
+        if (count($bindings) && is_array($bindings[0])) {
             $bindings = $bindings[0];
         }
-       try{
-           $query = $this->connection()->prepare($sql);
-           foreach ($bindings as $key  => $value){
-               $query->bindValue($key + 1, $value);
-           }
-           $query->execute();
-           return $query;
-       } catch (PDOException $e){
+        try {
+            $query = $this->connection()->prepare($sql);
+            foreach ($bindings as $key => $value) {
+                $query->bindValue($key + 1, $value);
+            }
+            $query->execute();
+            return $query;
+        }
+        catch (PDOException $e) {
             die($e->getMessage());
-       }
+        }
     }
 
     /**
@@ -403,8 +408,8 @@ class Database
     private function setFields(): string
     {
         $sql = '';
-        foreach (array_keys($this->data) as $key ){
-            $sql .= '`'.$key.'` = ? , ';
+        foreach (array_keys($this->data) as $key) {
+            $sql .= '`' . $key . '` = ? , ';
         }
         $sql = rtrim($sql, ', ');
         return $sql;
@@ -415,39 +420,39 @@ class Database
      */
     private function fetchStatement(): string
     {
-        $sql ="SELECT ";
-        if ($this->selects){
-            $sql .= implode(',',$this->selects);
-        }else{
-            $sql .="*";
+        $sql = "SELECT ";
+        if ($this->selects) {
+            $sql .= implode(',', $this->selects);
+        }
+        else {
+            $sql .= "*";
         }
         $sql .= " FROM " . $this->table . ' ';
 
-        if ($this->joins){
+        if ($this->joins) {
             $sql .= implode(' ', $this->joins);
         }
 
-        if ($this->wheres){
-            $sql .= ' WHERE ' . implode(' ',$this->wheres);
+        if ($this->wheres) {
+            $sql .= ' WHERE ' . implode(' ', $this->wheres);
         }
-        if ($this->limit){
-            $sql .= " LIMIT " .$this->limit;
+        if ($this->limit) {
+            $sql .= " LIMIT " . $this->limit;
         }
-        if ($this->offset){
-            $sql .= " OFFSET " .$this->limit;
+        if ($this->offset) {
+            $sql .= " OFFSET " . $this->limit;
         }
-        if ($this->orderBy){
-            $sql .= " ORDER BY " . implode(' ',$this->orderBy);
+        if ($this->orderBy) {
+            $sql .= " ORDER BY " . implode(' ', $this->orderBy);
         }
         return $sql;
     }
 
-    public function general($statement,$query,$params = array())
+    public function general($statement, $query, $params = array())
     {
         $sql = $this->connection()->prepare($statement);
 
-        if ($query == "all")
-        {
+        if ($query == "all") {
             $sql->execute();
             $stat = $sql->fetchAll();
         }
@@ -463,7 +468,8 @@ class Database
      *
      *
      */
-    private function rest(){
+    private function rest()
+    {
         $this->bindings = [];
         $this->wheres = [];
         $this->joins = [];
@@ -474,7 +480,8 @@ class Database
         $this->offset = null;
         $this->limit = null;
     }
-    
-    
+
+
+
 
 }

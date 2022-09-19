@@ -3,7 +3,6 @@ namespace Mabdulamonem\Eloquent;
 
 use Exception;
 use Mabdulamonem\Eloquent\Database;
-use Mabdulamonem\Eloquent\config;
 
 abstract class Model
 {
@@ -55,9 +54,7 @@ abstract class Model
      */
     public function __construct()
     {
-        $config = new config;
-        
-        $this->connection = new Database();
+        $this->connection = new Database;
     }
 
 
